@@ -290,6 +290,101 @@ a:focus-visible {
   overflow-wrap: anywhere;
 }
 
+/* Navegação do topo */
+.topnav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.nav-link {
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.nav-link:hover {
+  color: var(--accent);
+}
+
+/* Universo e planetas */
+.centered {
+  text-align: center;
+}
+
+.planet-grid {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+
+.planet-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 220px;
+  padding: 24px 20px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.planet-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+}
+
+.planet-card strong {
+  font-size: 1.15rem;
+}
+
+/* A imagem tem fundo preto em volta: o círculo recorta só o planeta. */
+.planet {
+  display: block;
+  width: 140px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #0a1430;
+  box-shadow: 0 0 36px rgba(70, 150, 255, 0.45);
+}
+
+.planet img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.12);
+}
+
+.planet-lg {
+  width: min(70vw, 340px);
+  margin: 24px auto 32px;
+}
+
+.back-link {
+  display: inline-block;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.back-link:hover {
+  color: var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planet-card {
+    transition: none;
+  }
+}
+
 /* Avatar */
 .avatar {
   display: inline-flex;

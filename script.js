@@ -110,10 +110,23 @@ let player = null;       // documento players/{uid}
 let playerLoaded = false;
 let editingNick = false;
 
+// Planetas do universo. Para adicionar outro: coloque a imagem na pasta
+// Planetas e acrescente uma entrada aqui.
+const PLANETS = [
+  {
+    id: 'terra',
+    name: 'Terra',
+    image: 'Planetas/Terra.png',
+    description: 'O planeta azul. Ponto de partida de todo explorador.',
+  },
+];
+
 const views = {
   home: document.getElementById('view-home'),
   nick: document.getElementById('view-nick'),
   profile: document.getElementById('view-profile'),
+  universe: document.getElementById('view-universe'),
+  planet: document.getElementById('view-planet'),
 };
 
 const loginButton = document.getElementById('google-login');
@@ -164,7 +177,7 @@ async function loadPlayer() {
     player = snap.exists() ? snap.data() : null;
     playerLoaded = true;
     setStatus('');
-    if (player && location.hash !== '#perfil') location.hash = '#perfil';
+    if (player && (location.hash === '' || location.hash === '#home')) location.hash = '#universo';
   } catch (error) {
     console.error(error);
     setStatus(explainError(error), true);
@@ -247,10 +260,11 @@ document.getElementById('nick-form').addEventListener('submit', async (event) =>
   }
 
   nickSubmit.disabled = true;
+  const firstTime = !player;
   try {
     await saveNick(nick);
     editingNick = false;
-    location.hash = '#perfil';
+    location.hash = firstTime ? '#universo' : '#perfil';
     render();
   } catch (error) {
     if (error.code === 'nick-taken') {
@@ -295,11 +309,49 @@ function fillAvatar(el, nick) {
   }
 }
 
+function buildUniverse() {
+  const grid = document.getElementById('planet-grid');
+  for (const planet of PLANETS) {
+    const item = document.createElement('li');
+    const card = document.createElement('a');
+    card.className = 'planet-card';
+    card.href = `#planeta/${planet.id}`;
+
+    const frame = document.createElement('span');
+    frame.className = 'planet';
+    const img = document.createElement('img');
+    img.src = planet.image;
+    img.alt = '';
+    frame.appendChild(img);
+
+    const name = document.createElement('strong');
+    name.textContent = planet.name;
+
+    const enter = document.createElement('span');
+    enter.className = 'btn btn-primary';
+    enter.textContent = 'Entrar';
+
+    card.append(frame, name, enter);
+    item.appendChild(card);
+    grid.appendChild(item);
+  }
+}
+
+function fillPlanet(planet) {
+  document.getElementById('planet-image').src = planet.image;
+  document.getElementById('planet-image').alt = `Planeta ${planet.name}`;
+  document.getElementById('planet-name').textContent = planet.name;
+  document.getElementById('planet-description').textContent = planet.description;
+}
+
 function render() {
   const chip = document.getElementById('user-chip');
+  const hash = location.hash;
+  const gameRoute = hash === '#universo' || hash.startsWith('#planeta/');
 
   loginButton.hidden = !authReady || Boolean(user);
-  document.getElementById('go-profile').hidden = !player;
+  document.getElementById('go-universe').hidden = !player;
+  document.getElementById('nav-universe').hidden = !player;
   chip.hidden = !player;
 
   if (player) {
@@ -335,8 +387,25 @@ function render() {
     return;
   }
 
+  if (player && gameRoute) {
+    const planet = PLANETS.find((p) => hash === `#planeta/${p.id}`);
+    if (planet) {
+      fillPlanet(planet);
+      show('planet');
+    } else {
+      show('universe');
+    }
+    return;
+  }
+
+  // O universo é só para quem já entrou com a conta.
+  if (gameRoute && authReady && !user) {
+    setStatus('Entre com sua conta para explorar o universo.');
+  }
+
   show('home');
 }
 
+buildUniverse();
 window.addEventListener('hashchange', render);
 render();
