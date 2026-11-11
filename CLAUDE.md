@@ -33,13 +33,24 @@ e mantenha-o atualizado quando a estrutura mudar.
 
 - Página única. A rota é o hash; `render()` em `script.js` decide qual
   `view` mostrar e `show(nome)` esconde as outras e marca o link do topo.
-- Rotas: `#home`, `#perfil`, `#universo`, `#planeta/<id>`,
-  `#planeta/<id>/trabalhos`.
+- Rotas: `#home`, `#perfil`, `#local`, `#local/trabalhos`.
+  `#local` abre o planeta onde o jogador está (`currentPlanet()`).
+- Topo: Home e Local. O Universo está FECHADO por decisão do dono: todo
+  jogador começa na Terra e vai ter que trabalhar e juntar dinheiro para sair.
+  A tela `universe` e `buildUniverse()` continuam no código, sem rota.
 - Telas (`views`): `home`, `nick`, `profile`, `universe`, `planet`.
-  A tela `planet` tem dois painéis: `#planet-info` e `#planet-jobs`.
-- Universo e planetas só abrem para quem está logado e tem nick.
-- Planetas ficam na lista `PLANETS` (id, name, image, description, facts).
-  Novo planeta = imagem em `Planetas/` + uma entrada na lista.
+  A tela `planet` tem painel à esquerda (`#planet-info` ou `#planet-jobs`)
+  e mapa à direita (`#planet-map`: SVG fixo no HTML + locais criados pelo JS).
+- Só abre para quem está logado e tem nick.
+- Planetas ficam na lista `PLANETS` (id, name, image, description, facts,
+  places). Cada `place` tem id, name, icon (`city` ou `mine`, desenhos em
+  `PLACE_ICONS`), x e y em % do mapa. O jogador começa no primeiro place.
+- Viagem: clicar num local mostra os detalhes e o botão "Viajar para cá";
+  `travelTo()` move o marcador e grava `players/{uid}.location`.
+- Teste sem login: dá para rodar o `script.js` real com o Firebase falso.
+  No console: baixar o texto do script, remover os `import`, prefixar stubs
+  (`onAuthStateChanged` chamando o callback com um usuário falso, `getDoc`
+  devolvendo `{nick}`) e importar por Blob URL.
 - Layout: `.game-box` tem 1280 de largura, centralizada, altura livre.
   Tudo do jogo fica dentro dela. Telas estreitas usam `.view` (720);
   telas largas usam `.view-wide`.
@@ -48,7 +59,7 @@ e mantenha-o atualizado quando a estrutura mudar.
 
 - Auth: Google, por pop-up. Domínios autorizados: `localhost`,
   `lohnner.github.io`.
-- Firestore: `players/{uid}` = `{ nick, nickLower, createdAt }`;
+- Firestore: `players/{uid}` = `{ nick, nickLower, createdAt, location: { planet, place } }`;
   `nicks/{nickLower}` = `{ uid }` (garante nick único).
 - Dado novo do jogador vai em `players/{uid}`; as regras atuais já deixam o
   dono gravar no próprio documento. Coleção nova exige regra nova.

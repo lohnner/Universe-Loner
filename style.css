@@ -424,9 +424,147 @@ a:focus-visible {
   transform: scale(1.12);
 }
 
-.planet-lg {
-  width: min(100%, 520px);
-  margin: 0 auto;
+.planet-thumb {
+  width: 84px;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px rgba(70, 150, 255, 0.45);
+}
+
+.planet-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.planet-head .eyebrow {
+  margin: 0 0 4px;
+}
+
+/* Mapa do planeta */
+.planet-map {
+  position: relative;
+  aspect-ratio: 10 / 7;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: #2a5a2b;
+}
+
+.map-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-place {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.map-place svg {
+  width: 72px;
+  height: 72px;
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.45));
+  transition: transform 0.15s;
+}
+
+.map-place:hover svg {
+  transform: scale(1.08);
+}
+
+.map-place-label {
+  padding: 2px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: rgba(5, 6, 13, 0.8);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.map-place[aria-pressed="true"] .map-place-label {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.map-place:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 12px;
+}
+
+/* Marcador do jogador: fica acima do local onde ele está e desliza ao viajar */
+.map-player {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 18px;
+  height: 18px;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(110, 231, 255, 0.3), 0 2px 6px rgba(0, 0, 0, 0.5);
+  transform: translate(-50%, calc(-50% - 58px));
+  transition: left 1.2s ease-in-out, top 1.2s ease-in-out;
+  pointer-events: none;
+}
+
+.map-player span {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #05060d;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-player {
+    transition: none;
+  }
+}
+
+.place-details .here {
+  margin-top: 8px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.place-details .btn {
+  margin-top: 12px;
+}
+
+.place-details {
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.place-details strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.place-details p {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 /* Página do planeta: imagem à esquerda, informações à direita */
@@ -436,19 +574,19 @@ a:focus-visible {
 
 .planet-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 48px;
+  grid-template-columns: 340px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
 }
 
 .planet-panel {
   max-width: none;
   margin: 0;
-  padding: 32px;
+  padding: 24px;
 }
 
 .planet-panel h1 {
-  font-size: clamp(2rem, 4vw, 2.8rem);
+  font-size: 1.9rem;
 }
 
 .planet-panel .eyebrow {
@@ -457,7 +595,8 @@ a:focus-visible {
 
 .planet-panel .lead {
   max-width: none;
-  margin: 12px 0 24px;
+  margin: 14px 0 18px;
+  font-size: 0.95rem;
 }
 
 .facts div {
@@ -518,11 +657,16 @@ a:focus-visible {
 @media (max-width: 800px) {
   .planet-layout {
     grid-template-columns: 1fr;
-    gap: 28px;
   }
 
-  .planet-lg {
-    width: min(70vw, 320px);
+  /* no celular o mapa vem primeiro */
+  .planet-map {
+    order: -1;
+  }
+
+  .map-place svg {
+    width: 52px;
+    height: 52px;
   }
 }
 
