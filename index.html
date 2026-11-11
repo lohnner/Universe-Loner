@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universe Loner</title>
-  <link rel="stylesheet" href="style.css">
+  <!-- Ao lançar uma versão nova, troque o número nos três lugares deste arquivo
+       (style.css?v=, script.js?v= e o texto no canto). O ?v= obriga o navegador
+       a baixar os arquivos novos em vez de usar os antigos guardados. -->
+  <link rel="stylesheet" href="style.css?v=0.0.3c">
 </head>
 <body>
   <canvas id="game" aria-hidden="true"></canvas>
@@ -115,6 +118,8 @@
     </section>
   </main>
 
-  <script type="module" src="script.js"></script>
+  <div class="version">v0.0.3c</div>
+
+  <script type="module" src="script.js?v=0.0.3c"></script>
 </body>
 </html>

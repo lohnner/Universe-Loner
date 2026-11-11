@@ -132,6 +132,18 @@ body {
   white-space: nowrap;
 }
 
+/* Versão do jogo, no canto inferior direito */
+.version {
+  position: fixed;
+  right: 12px;
+  bottom: 8px;
+  z-index: 5;
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  pointer-events: none;
+}
+
 /* Layout */
 main {
   display: flex;
