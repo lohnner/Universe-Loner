@@ -4,10 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universe Loner</title>
-  <!-- Ao lançar uma versão nova, troque o número nos três lugares deste arquivo
-       (style.css?v=, script.js?v= e o texto no canto). O ?v= obriga o navegador
+  <!-- Ao lançar uma versão nova, troque o número nos quatro lugares deste arquivo
+       (style.css?v=, mapa.js?v=, script.js?v= e o texto no canto). O ?v= obriga o navegador
        a baixar os arquivos novos em vez de usar os antigos guardados. -->
-  <link rel="stylesheet" href="style.css?v=0.0.4">
+  <link rel="stylesheet" href="style.css?v=0.0.4a">
 </head>
 <body>
   <canvas id="game" aria-hidden="true"></canvas>
@@ -127,70 +127,21 @@
 
         <!-- Coluna direita: mapa do planeta -->
         <div class="planet-map" id="planet-map">
-          <svg class="map-art" viewBox="0 0 800 560" preserveAspectRatio="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="map-grass" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#42803a"/>
-                <stop offset="1" stop-color="#2a5a2b"/>
-              </linearGradient>
-              <linearGradient id="map-water" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stop-color="#3f8fd0"/>
-                <stop offset="1" stop-color="#1d4f8f"/>
-              </linearGradient>
-              <g id="map-tree">
-                <rect x="-2" y="-2" width="4" height="9" fill="#4a3320"/>
-                <circle cx="0" cy="-10" r="11" fill="#1e4a22"/>
-                <circle cx="-4" cy="-13" r="6" fill="#2f6e30"/>
-              </g>
-            </defs>
-
-            <rect width="800" height="560" fill="url(#map-grass)"/>
-            <ellipse cx="190" cy="150" rx="170" ry="80" fill="#55953f" opacity="0.35"/>
-            <ellipse cx="640" cy="300" rx="150" ry="60" fill="#23502a" opacity="0.4"/>
-            <ellipse cx="330" cy="290" rx="120" ry="50" fill="#55953f" opacity="0.25"/>
-
-            <!-- mar e praia -->
-            <path d="M-20 400 C120 350 210 480 340 440 S520 340 620 410 S760 520 830 470 L830 600 L-20 600 Z" fill="#d6c487"/>
-            <path d="M-20 412 C120 362 210 492 340 452 S520 352 620 422 S760 532 830 482 L830 600 L-20 600 Z" fill="url(#map-water)"/>
-
-            <!-- estrada da mina até a praia -->
-            <path d="M545 215 C520 270 470 300 450 360 S430 400 420 425" fill="none" stroke="#9a7d50" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 12"/>
-
-            <!-- montanhas -->
-            <polygon points="420,205 495,95 565,205" fill="#6b6257"/>
-            <polygon points="495,95 514,126 502,121 490,132 478,120" fill="#e3e3e3"/>
-            <polygon points="640,205 705,120 770,205" fill="#5f574d"/>
-            <polygon points="515,205 600,70 695,205" fill="#7b7165"/>
-            <polygon points="600,70 624,108 608,102 594,116 578,104" fill="#eeeeee"/>
-
-            <!-- árvores -->
-            <use href="#map-tree" x="70" y="90"/>
-            <use href="#map-tree" x="105" y="110"/>
-            <use href="#map-tree" x="140" y="85"/>
-            <use href="#map-tree" x="90" y="145"/>
-            <use href="#map-tree" x="170" y="125"/>
-            <use href="#map-tree" x="210" y="95"/>
-            <use href="#map-tree" x="60" y="250"/>
-            <use href="#map-tree" x="100" y="275"/>
-            <use href="#map-tree" x="150" y="255"/>
-            <use href="#map-tree" x="250" y="210"/>
-            <use href="#map-tree" x="290" y="235"/>
-            <use href="#map-tree" x="330" y="130"/>
-            <use href="#map-tree" x="700" y="290"/>
-            <use href="#map-tree" x="735" y="320"/>
-            <use href="#map-tree" x="670" y="330"/>
-            <use href="#map-tree" x="720" y="370"/>
-          </svg>
-          <!-- os locais do mapa são criados pelo script.js (lista "places" do planeta) -->
-          <div id="map-places"></div>
-          <div class="map-player" id="map-player"><span>Você</span></div>
+          <!-- O mapa é maior que a janela e arrasta com o mouse. O desenho vem do
+               mapa.js; os locais clicáveis são criados pelo script.js. -->
+          <div class="map-inner" id="map-inner">
+            <div id="map-art"></div>
+            <div id="map-places"></div>
+            <div class="map-player" id="map-player"><span>Você</span></div>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <div class="version">v0.0.4</div>
+  <div class="version">v0.0.4a</div>
 
-  <script type="module" src="script.js?v=0.0.4"></script>
+  <script src="mapa.js?v=0.0.4a"></script>
+  <script type="module" src="script.js?v=0.0.4a"></script>
 </body>
 </html>

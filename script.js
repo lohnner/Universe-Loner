@@ -124,77 +124,54 @@ const PLANETS = [
       ['Atmosfera', 'Respirável'],
       ['Gravidade', '1 g'],
     ],
-    // Locais no mapa. x e y são a posição em % (0 a 100) dentro do mapa.
-    // O jogador começa no primeiro local da lista.
+    // Locais no mapa. O desenho vem do mapa.js (window.UL_MAPS.terra), então
+    // x e y (em pixels do mapa) precisam bater com as posições de lá.
+    // w e h = tamanho da área clicável; markerDy = altura do marcador "Você".
+    // O jogador começa no primeiro local da lista (Nova Aurora).
     places: [
       {
         id: 'nova-aurora',
         name: 'Nova Aurora',
-        icon: 'city',
-        x: 24,
-        y: 40,
-        description: 'Metrópole moderna cercada de florestas.',
+        x: 430,
+        y: 430,
+        w: 330,
+        h: 170,
+        markerDy: 80,
+        description: 'Cidade tranquila de casas baixas, cercada de florestas e plantações.',
       },
       {
         id: 'porto-azul',
         name: 'Porto Azul',
-        icon: 'city',
-        x: 50,
-        y: 58,
+        x: 900,
+        y: 720,
+        w: 320,
+        h: 165,
+        markerDy: 215,
         description: 'Cidade portuária de arranha-céus à beira-mar.',
       },
       {
         id: 'vale-central',
         name: 'Vale Central',
-        icon: 'city',
-        x: 86,
-        y: 60,
-        description: 'Centro financeiro no vale ao lado das montanhas.',
+        x: 1720,
+        y: 860,
+        w: 390,
+        h: 200,
+        markerDy: 240,
+        description: 'Centro financeiro moderno no vale ao lado das montanhas.',
       },
       {
         id: 'mina-de-cobre',
         name: 'Mina de cobre',
-        icon: 'mine',
-        x: 68,
-        y: 36,
-        description: 'Uma mina aberta no pé da montanha. Produz cobre.',
+        x: 640,
+        y: 230,
+        w: 390,
+        h: 200,
+        markerDy: 115,
+        description: 'Terreno cercado ao lado de Nova Aurora, com cava a céu aberto. Produz cobre.',
       },
     ],
   },
 ];
-
-// Desenhos dos locais do mapa (SVG).
-const PLACE_ICONS = {
-  city: `<svg viewBox="0 0 64 64" aria-hidden="true">
-    <ellipse cx="32" cy="58" rx="30" ry="5" fill="#000" opacity="0.25"/>
-    <rect x="4" y="34" width="12" height="24" fill="#5d6f8f"/>
-    <rect x="14" y="20" width="14" height="38" fill="#8fa6c9"/>
-    <rect x="26" y="6" width="13" height="52" fill="#b9cdea"/>
-    <rect x="31" y="1" width="3" height="6" fill="#b9cdea"/>
-    <rect x="37" y="26" width="13" height="32" fill="#7389ad"/>
-    <rect x="48" y="38" width="12" height="20" fill="#5d6f8f"/>
-    <g fill="#ffe9a3">
-      <rect x="17" y="24" width="3" height="3"/><rect x="22" y="24" width="3" height="3"/>
-      <rect x="17" y="32" width="3" height="3"/><rect x="22" y="40" width="3" height="3"/>
-      <rect x="29" y="11" width="3" height="3"/><rect x="34" y="11" width="3" height="3"/>
-      <rect x="29" y="20" width="3" height="3"/><rect x="34" y="29" width="3" height="3"/>
-      <rect x="29" y="38" width="3" height="3"/><rect x="34" y="47" width="3" height="3"/>
-      <rect x="40" y="31" width="3" height="3"/><rect x="45" y="39" width="3" height="3"/>
-      <rect x="7" y="39" width="3" height="3"/><rect x="52" y="43" width="3" height="3"/>
-    </g>
-  </svg>`,
-  mine: `<svg viewBox="0 0 64 64" aria-hidden="true">
-    <path d="M4 54 Q8 22 32 16 Q56 22 60 54 Z" fill="#5c5349"/>
-    <path d="M10 54 Q14 30 32 24 Q50 30 54 54 Z" fill="#6f655a"/>
-    <path d="M22 54 V38 Q32 28 42 38 V54 Z" fill="#14100c"/>
-    <path d="M20 54 V36 H44 V54" fill="none" stroke="#8a5a2b" stroke-width="4" stroke-linejoin="round"/>
-    <rect x="18" y="33" width="28" height="5" rx="1" fill="#a06a34"/>
-    <circle cx="12" cy="55" r="5" fill="#c8732e"/>
-    <circle cx="19" cy="57" r="4" fill="#e08a3c"/>
-    <circle cx="50" cy="56" r="5" fill="#c8732e"/>
-    <circle cx="44" cy="58" r="3" fill="#f0a050"/>
-  </svg>`,
-};
 
 const views = {
   home: document.getElementById('view-home'),
@@ -438,9 +415,72 @@ function playerPlace(planet) {
 
 function movePlayerMarker(place) {
   const marker = document.getElementById('map-player');
-  marker.style.left = `${place.x}%`;
-  marker.style.top = `${place.y}%`;
+  marker.style.left = `${place.x}px`;
+  marker.style.top = `${place.y}px`;
+  marker.style.setProperty('--dy', `${place.markerDy}px`);
 }
+
+// ---------- arrastar o mapa com o botão esquerdo do mouse (ou o dedo) ----------
+const mapView = document.getElementById('planet-map');
+const mapInner = document.getElementById('map-inner');
+const pan = { x: 0, y: 0, startX: 0, startY: 0, originX: 0, originY: 0, active: false, moved: false };
+
+function setPan(x, y) {
+  const minX = Math.min(0, mapView.clientWidth - mapInner.offsetWidth);
+  const minY = Math.min(0, mapView.clientHeight - mapInner.offsetHeight);
+  pan.x = Math.max(minX, Math.min(0, x));
+  pan.y = Math.max(minY, Math.min(0, y));
+  mapInner.style.transform = `translate(${pan.x}px, ${pan.y}px)`;
+}
+
+function centerMapOn(place) {
+  // sobe um pouco o centro para o marcador "Você" não ficar cortado no topo
+  setPan(mapView.clientWidth / 2 - place.x, mapView.clientHeight / 2 - (place.y - place.markerDy / 2));
+}
+
+mapView.addEventListener('pointerdown', (event) => {
+  if (event.button !== 0) return;
+  pan.active = true;
+  pan.moved = false;
+  pan.startX = event.clientX;
+  pan.startY = event.clientY;
+  pan.originX = pan.x;
+  pan.originY = pan.y;
+});
+
+mapView.addEventListener('pointermove', (event) => {
+  if (!pan.active) return;
+  const dx = event.clientX - pan.startX;
+  const dy = event.clientY - pan.startY;
+  if (!pan.moved) {
+    if (Math.hypot(dx, dy) < 5) return; // ainda é um clique, não um arrasto
+    pan.moved = true;
+    mapView.setPointerCapture(event.pointerId);
+    mapView.classList.add('dragging');
+  }
+  setPan(pan.originX + dx, pan.originY + dy);
+});
+
+function endPan() {
+  pan.active = false;
+  mapView.classList.remove('dragging');
+}
+mapView.addEventListener('pointerup', endPan);
+mapView.addEventListener('pointercancel', endPan);
+
+// Soltar depois de arrastar não conta como clique em um local.
+mapView.addEventListener(
+  'click',
+  (event) => {
+    if (!pan.moved) return;
+    pan.moved = false;
+    event.stopPropagation();
+    event.preventDefault();
+  },
+  true
+);
+
+window.addEventListener('resize', () => setPan(pan.x, pan.y));
 
 function showPlaceDetails(planet, place) {
   const details = document.getElementById('place-details');
@@ -483,14 +523,22 @@ function buildMapPlaces(planet) {
   container.dataset.planet = planet.id;
   container.textContent = '';
 
+  // Desenho do mapa (gerado pelo mapa.js) e tamanho da área arrastável.
+  const map = window.UL_MAPS[planet.id];
+  mapInner.style.width = `${map.width}px`;
+  mapInner.style.height = `${map.height}px`;
+  document.getElementById('map-art').innerHTML = map.svg;
+  centerMapOn(playerPlace(planet));
+
   for (const place of planet.places) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'map-place';
-    button.style.left = `${place.x}%`;
-    button.style.top = `${place.y}%`;
+    button.style.left = `${place.x}px`;
+    button.style.top = `${place.y}px`;
+    button.style.width = `${place.w}px`;
+    button.style.height = `${place.h}px`;
     button.setAttribute('aria-pressed', 'false');
-    button.innerHTML = PLACE_ICONS[place.icon] || '';
 
     const label = document.createElement('span');
     label.className = 'map-place-label';
@@ -588,8 +636,8 @@ function render() {
   }
 
   if (player && gameRoute) {
+    show('planet'); // antes de preencher: o mapa precisa estar visível para centralizar
     fillPlanet(currentPlanet(), hash.endsWith('/trabalhos'));
-    show('planet');
     return;
   }
 
