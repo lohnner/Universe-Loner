@@ -4,21 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Universe Loner</title>
-  <!-- Ao lançar uma versão nova, troque o número nos quatro lugares deste arquivo
-       (style.css?v=, mapa.js?v=, script.js?v= e o texto no canto). O ?v= obriga o navegador
+  <!-- Ao lançar uma versão nova, troque o número nos três lugares deste arquivo
+       (style.css?v=, script.js?v= e o texto no canto). O ?v= obriga o navegador
        a baixar os arquivos novos em vez de usar os antigos guardados. -->
-  <link rel="stylesheet" href="style.css?v=0.0.4b">
+  <link rel="stylesheet" href="style.css?v=0.0.5">
 </head>
 <body>
   <canvas id="game" aria-hidden="true"></canvas>
 
   <header class="topbar">
-    <a class="brand" href="#home">Universe <span>Loner</span></a>
-    <nav class="topnav" aria-label="Principal">
-      <a class="nav-link" id="nav-home" href="#home">Home</a>
-      <a class="nav-link" id="nav-local" href="#local">Local</a>
-    </nav>
+    <a class="brand" id="brand" href="#home">Universe<span>Loner</span></a>
     <div class="topbar-end">
+      <div class="credits" id="credits-chip" hidden>
+        <span>Créditos</span>
+        <strong id="credits-value">0</strong>
+      </div>
       <a class="user-chip" id="user-chip" href="#perfil" hidden>
         <span class="avatar avatar-sm" id="chip-avatar"></span>
         <span id="chip-nick"></span>
@@ -27,28 +27,27 @@
   </header>
 
   <main class="game-box">
-    <!-- HOME -->
-    <section class="view" id="view-home">
-      <p class="eyebrow">Exploração espacial</p>
-      <h1>Um universo inteiro.<br>Só você e a sua nave.</h1>
-      <p class="lead">Explore sistemas desconhecidos, descubra planetas e faça o seu próprio caminho entre as estrelas.</p>
+    <!-- ENTRADA (quem ainda não entrou) -->
+    <section class="view landing" id="view-home">
+      <p class="eyebrow">Terra · Ano 2387</p>
+      <h1>Você começa sem nada.<br>O resto do universo custa caro.</h1>
+      <p class="lead">Pegue um turno na mina ou nas docas, junte créditos, suba de nível e compre a sua saída do planeta.</p>
 
       <div class="login-area">
         <button class="btn btn-primary" id="google-login" type="button" hidden>Entrar com Google</button>
         <p class="note" id="status" role="status"></p>
       </div>
-      <a class="btn btn-primary" id="go-local" href="#local" hidden>Ir para o meu local</a>
 
       <ul class="features">
-        <li><strong>Explore</strong><span>Viaje livremente entre sistemas e planetas.</span></li>
-        <li><strong>Descubra</strong><span>Encontre lugares que ninguém viu antes.</span></li>
-        <li><strong>Faça de tudo</strong><span>Você decide como jogar.</span></li>
+        <li><strong>Trabalhe</strong><span>Escolha um serviço, espere o turno acabar e receba.</span></li>
+        <li><strong>Evolua</strong><span>Nível infinito e habilidades que sobem a cada turno.</span></li>
+        <li><strong>Negocie</strong><span>Venda o que achar no mercado e guarde no banco.</span></li>
       </ul>
     </section>
 
     <!-- ESCOLHA DO NICK -->
     <section class="view" id="view-nick" hidden>
-      <form class="card" id="nick-form" novalidate>
+      <form class="panel narrow" id="nick-form" novalidate>
         <h2 id="nick-title">Escolha o seu nick</h2>
         <p class="note" id="nick-subtitle">É assim que os outros jogadores vão ver você.</p>
         <label for="nick-input">Nick</label>
@@ -56,92 +55,42 @@
         <p class="hint" id="nick-hint">De 3 a 16 caracteres: letras, números e _</p>
         <div class="row">
           <button class="btn btn-primary" type="submit">Confirmar</button>
-          <button class="btn btn-ghost" id="nick-cancel" type="button" hidden>Cancelar</button>
+          <button class="btn" id="nick-cancel" type="button" hidden>Cancelar</button>
         </div>
       </form>
     </section>
 
-    <!-- PERFIL -->
-    <section class="view" id="view-profile" hidden>
-      <div class="card profile">
-        <span class="avatar avatar-lg" id="profile-avatar"></span>
-        <h2 id="profile-nick"></h2>
-        <dl>
-          <div><dt>Nome</dt><dd id="profile-name"></dd></div>
-          <div id="profile-email-row"><dt>E-mail</dt><dd id="profile-email"></dd></div>
-          <div><dt>Local</dt><dd id="profile-location"></dd></div>
-          <div><dt>Explorador desde</dt><dd id="profile-since"></dd></div>
-        </dl>
-        <div class="row">
-          <button class="btn btn-ghost" id="edit-nick" type="button">Alterar nick</button>
-          <button class="btn btn-ghost" id="logout" type="button">Sair</button>
+    <!-- JOGO -->
+    <div class="game" id="view-game" hidden>
+      <aside class="side">
+        <div class="panel player-card">
+          <span class="avatar avatar-md" id="side-avatar"></span>
+          <div class="player-id">
+            <strong id="side-nick"></strong>
+            <span>Nova Aurora · Terra</span>
+          </div>
+          <div class="meter" id="side-level"></div>
         </div>
-      </div>
-    </section>
 
-    <!-- UNIVERSO (desativado por enquanto: nenhuma rota leva até aqui) -->
-    <section class="view centered" id="view-universe" hidden>
-      <p class="eyebrow">Mapa estelar</p>
-      <h1>Universo</h1>
-      <p class="lead">Escolha um planeta para visitar.</p>
-      <ul class="planet-grid" id="planet-grid"></ul>
-    </section>
+        <nav class="side-nav" aria-label="Jogo">
+          <a href="#cidade" data-nav="cidade">Cidade</a>
+          <a href="#trabalhos" data-nav="trabalhos">Trabalhos</a>
+          <a href="#mercado" data-nav="mercado">Mercado</a>
+          <a href="#banco" data-nav="banco">Banco</a>
+          <a href="#perfil" data-nav="perfil">Perfil</a>
+        </nav>
 
-    <!-- PÁGINA DO PLANETA -->
-    <section class="view view-wide" id="view-planet" hidden>
-      <div class="planet-layout">
-        <!-- Coluna esquerda: informações -->
-        <aside class="planet-side">
-          <!-- Informações do planeta -->
-          <div class="card planet-panel" id="planet-info">
-            <div class="planet-head">
-              <span class="planet planet-thumb"><img id="planet-image" alt=""></span>
-              <div>
-                <p class="eyebrow">Planeta</p>
-                <h1 id="planet-name"></h1>
-              </div>
-            </div>
-            <p class="lead" id="planet-description"></p>
-            <dl class="facts" id="planet-facts"></dl>
+        <div class="panel side-job" id="side-job"></div>
+      </aside>
 
-            <h2 class="section-title">Local selecionado</h2>
-            <div class="place-details" id="place-details">
-              <p class="note">Clique em um local no mapa.</p>
-            </div>
-
-            <h2 class="section-title">Menu</h2>
-            <a class="place-link" id="planet-jobs-link" href="#local/trabalhos">
-              <strong>Trabalhos</strong>
-              <span>Abrir →</span>
-            </a>
-          </div>
-
-          <!-- Trabalhos do planeta -->
-          <div class="card planet-panel" id="planet-jobs" hidden>
-            <a class="back-link" id="jobs-back" href="#local"></a>
-            <p class="eyebrow" id="jobs-planet"></p>
-            <h1>Trabalhos</h1>
-            <p class="empty">Nenhum trabalho disponível por enquanto.</p>
-          </div>
-        </aside>
-
-        <!-- Coluna direita: mapa do planeta -->
-        <div class="planet-map" id="planet-map">
-          <!-- O mapa é maior que a janela e arrasta com o mouse. O desenho vem do
-               mapa.js; os locais clicáveis são criados pelo script.js. -->
-          <div class="map-inner" id="map-inner">
-            <canvas id="map-art"></canvas>
-            <div id="map-places"></div>
-            <div class="map-player" id="map-player"><span>Você</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
+      <!-- as páginas do jogo são montadas pelo script.js -->
+      <div class="content" id="content" aria-live="polite"></div>
+    </div>
   </main>
 
-  <div class="version">v0.0.4b</div>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="version">v0.0.5</div>
 
-  <script src="mapa.js?v=0.0.4b"></script>
-  <script type="module" src="script.js?v=0.0.4b"></script>
+  <script type="module" src="script.js?v=0.0.5"></script>
 </body>
 </html>

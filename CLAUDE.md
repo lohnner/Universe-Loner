@@ -1,6 +1,8 @@
 # Universe Loner — guia rápido para o Claude
 
-Jogo de exploração espacial em HTML, CSS e JS puros (sem build, sem npm).
+Jogo de texto, futurista, em HTML, CSS e JS puros (sem build, sem npm).
+O jogador começa na Terra, em Nova Aurora, pega turnos de trabalho, espera o
+tempo passar e recebe créditos, XP e itens. Não há mapa (o dono mandou tirar).
 Este arquivo existe para economizar uso: leia-o em vez de reexplorar o projeto,
 e mantenha-o atualizado quando a estrutura mudar.
 
@@ -9,81 +11,71 @@ e mantenha-o atualizado quando a estrutura mudar.
 - Responda em português, curto. O dono do projeto dita os pedidos por voz;
   interprete o sentido e siga, sem pedir confirmação para coisas pequenas.
 - Não releia arquivos inteiros. Use Grep para achar o trecho e Edit direto.
-  Os três arquivos são pequenos e a estrutura está descrita abaixo.
-- Não dá para testar login: o Google exige a conta do dono. Não tente.
-  Para conferir visual, force a tela a aparecer pelo console
-  (`view-home.hidden = true; view-X.hidden = false`) e tire UM print por tela.
-- Confira no navegador só mudanças visuais. Mudança de texto ou de dado
-  (ex.: novo planeta na lista) não precisa de print.
+- Confira no navegador só mudanças visuais ou de fluxo, com poucos prints.
 - Não há `git` nem `node` no terminal. Só `python`. O dono faz commit e push
   pelo GitHub Desktop.
 - Não crie arquivos de documentação além deste.
+- Tudo é futurista. O dono rejeitou visual "de criança": prefira texto, painéis
+  e barras a desenhos feitos por código.
 
 ## Arquivos
 
 | Arquivo | O que tem |
 |---|---|
-| `index.html` | Todas as telas, cada uma numa `<section class="view" id="view-...">` dentro de `<main class="game-box">` |
-| `style.css` | Tema (variáveis em `:root`), topo, caixa do jogo, cartões, planeta |
-| `script.js` | Módulo ES: Firebase, fundo de estrelas, estado, login, nick, telas |
-| `Planetas/` | Imagens dos planetas (`Terra.png`). O P é maiúsculo; o GitHub diferencia |
+| `index.html` | Estrutura fixa: topo, entrada (`#view-home`), nick (`#view-nick`) e o jogo (`#view-game`: lateral + `#content`) |
+| `style.css` | Tema (variáveis em `:root`), painéis, barras, tabela, banco, perfil |
+| `script.js` | Módulo ES: Firebase, regras do jogo, ações e páginas |
+| `Planetas/Terra.png` | Imagem da Terra (sem uso no momento) |
 | `firestore.rules` | Cópia das regras publicadas no Firestore (publicar é manual, no console) |
 
-## Como o site funciona
+## Como o jogo funciona (`script.js`)
 
-- Página única. A rota é o hash; `render()` em `script.js` decide qual
-  `view` mostrar e `show(nome)` esconde as outras e marca o link do topo.
-- Rotas: `#home`, `#perfil`, `#local`, `#local/trabalhos`.
-  `#local` abre o planeta onde o jogador está (`currentPlanet()`).
-- Topo: Home e Local. O Universo está FECHADO por decisão do dono: todo
-  jogador começa na Terra e vai ter que trabalhar e juntar dinheiro para sair.
-  A tela `universe` e `buildUniverse()` continuam no código, sem rota.
-- Telas (`views`): `home`, `nick`, `profile`, `universe`, `planet`.
-  A tela `planet` tem painel à esquerda (`#planet-info` ou `#planet-jobs`)
-  e mapa à direita (`#planet-map`: SVG fixo no HTML + locais criados pelo JS).
-- Só abre para quem está logado e tem nick.
-- Planetas ficam na lista `PLANETS` (id, name, image, description, facts,
-  places). Cada `place` tem id, name, x e y (pixels do mapa), w e h (área
-  clicável), markerDy (altura do marcador "Você"). O jogador começa no
-  primeiro place (Nova Aurora).
-- `mapa.js` (script comum, não módulo) desenha o mapa da Terra em SVG por
-  código (3200x2000, isométrico) e expõe `window.UL_MAPS.terra`. As posições
-  das cidades e da mina ficam no topo dele e PRECISAM bater com os `places`
-  do `script.js`. Deserto à esquerda (`desertEdge`), verde à direita, mar
-  embaixo. Nova Aurora = vila futurista acabada no deserto (`outpost`), com a
-  mina pequena ao lado; Porto Azul e Vale Central = torres futuristas com
-  néon (`cityGrid`, `futureTower`, `cylTower`). Sem montanhas: o dono achou
-  infantis; no lugar há chapadas (`mesa`). Não leia o arquivo inteiro:
-  procure a seção pelo comentário.
-- Desempenho: `drawMapArt()` em `script.js` transforma o SVG numa imagem só
-  (`<canvas id="map-art">`). Nunca coloque o SVG direto na página: fica lento.
-- O mapa é maior que a janela (`#planet-map`) e arrasta com o mouse
-  (`setPan`, `centerMapOn` em `script.js`).
-- Viagem: clicar num local mostra os detalhes e o botão "Viajar para cá";
-  `travelTo()` move o marcador e grava `players/{uid}.location`.
-- Teste sem login: dá para rodar o `script.js` real com o Firebase falso.
-  No console: baixar o texto do script, remover os `import`, prefixar stubs
-  (`onAuthStateChanged` chamando o callback com um usuário falso, `getDoc`
-  devolvendo `{nick}`) e importar por Blob URL.
-- Layout: `.game-box` tem 1280 de largura, centralizada, altura livre.
-  Tudo do jogo fica dentro dela. Telas estreitas usam `.view` (720);
-  telas largas usam `.view-wide`.
+- Página única; a rota é o hash: `#cidade`, `#trabalhos`, `#mercado`,
+  `#banco`, `#perfil`. Sem login, tudo mostra a entrada (`#home`).
+- `render()` decide a tela. As páginas do jogo são funções que devolvem HTML
+  (`pageCidade`, `pageTrabalhos`, `pageMercado`, `pageBanco`, `pagePerfil`,
+  registradas em `PAGE_RENDERERS`) e vão para `#content`.
+- Botões usam `data-action="..."`; o mapa `ACTIONS` liga cada um à função.
+- Números ajustáveis ficam no bloco "REGRAS DO JOGO": `SHIFT_MINUTES` (30),
+  `PAY_MIN`/`PAY_MAX` (30 a 57), `XP_PER_SHIFT` (10), `SKILL_XP_PER_SHIFT` (8),
+  `DROP_CHANCE` (10% por item, sorteado separado), `LEVEL_BASE`, `SKILL_BASE`.
+- `ITEMS`: itens e preço de venda. `JOBS`: trabalhos (minerador e traficante),
+  cada um com `skill`, `drops` (5 itens) e `bonusCredits` opcional.
+  Trabalho novo = uma entrada em `JOBS` (a habilidade aparece sozinha no perfil).
+- Nível infinito: `levelInfo(totalXp, base)`; cada nível pede
+  `base * nível^1.5` de XP. O dono quer progressão BEM lenta.
+- Turno: `startJob` grava `job: { id, startedAt, endsAt }`; `collectJob`
+  sorteia pagamento e itens quando o tempo acaba. Um turno por vez.
+- `savePlayer(patch)` grava no Firestore e só então muda a tela.
+- Tudo roda no navegador do jogador: dá para trapacear. Tornar seguro exige
+  servidor (Cloud Functions). O dono ainda não pediu isso.
 
 ## Firebase (projeto `loner-hq`)
 
 - Auth: Google, por pop-up. Domínios autorizados: `localhost`,
   `lohnner.github.io`.
-- Firestore: `players/{uid}` = `{ nick, nickLower, createdAt, location: { planet, place } }`;
+- Firestore: `players/{uid}` = `{ nick, nickLower, createdAt, credits, bank,
+  xp, skills: { miner, dealer }, items: { id: qtd }, job, shifts }`;
   `nicks/{nickLower}` = `{ uid }` (garante nick único).
-- Dado novo do jogador vai em `players/{uid}`; as regras atuais já deixam o
-  dono gravar no próprio documento. Coleção nova exige regra nova.
+  `normalizePlayer()` preenche o que faltar em contas antigas.
+- As regras atuais já deixam o dono gravar no próprio documento. Coleção nova
+  exige regra nova.
+
+## Testar sem login
+
+O Google exige a conta do dono, então não tente logar. Rode o `script.js` real
+com o Firebase falso, pelo console da página: baixe o texto do script, remova
+os `import`, prefixe stubs (`onAuthStateChanged` chamando o callback com um
+usuário falso; `getDoc` devolvendo um jogador; `updateDoc` guardando os
+patches) e importe por Blob URL. Para testar o fim de um turno, devolva no
+`getDoc` um `job` com `endsAt` no passado.
 
 ## Versão e publicação
 
 - Publicado em `https://lohnner.github.io/Universe-Loner/` (GitHub Pages,
   repositório `lohnner/Universe-Loner`, branch `main`).
-- A versão aparece em quatro lugares do `index.html`: `style.css?v=`,
-  `mapa.js?v=`, `script.js?v=` e o texto do `<div class="version">`. O dono escolhe o número.
+- A versão aparece em três lugares do `index.html`: `style.css?v=`,
+  `script.js?v=` e o texto do `<div class="version">`. O dono escolhe o número.
   Sempre que ele informar uma versão nova, troque os três; sem isso o
   navegador usa CSS e JS antigos e o site quebra.
 
