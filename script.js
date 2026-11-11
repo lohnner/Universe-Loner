@@ -12,7 +12,6 @@ import {
   getDoc,
   runTransaction,
   serverTimestamp,
-  updateDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ============================================================
@@ -100,7 +99,7 @@ if (!reduceMotion) requestAnimationFrame(loop);
 // ============================================================
 // ESTADO
 // Firestore:
-//   players/{uid}      -> { nick, nickLower, createdAt, country }
+//   players/{uid}      -> { nick, nickLower, createdAt }
 //   nicks/{nickLower}  -> { uid }   (garante nick único)
 // ============================================================
 const NICK_PATTERN = /^[A-Za-z0-9_]{3,16}$/;
@@ -119,25 +118,17 @@ const PLANETS = [
     name: 'Terra',
     image: 'Planetas/Terra.png',
     description: 'O planeta azul. Ponto de partida de todo explorador.',
+    facts: [
+      ['Tipo', 'Planeta rochoso'],
+      ['Atmosfera', 'Respirável'],
+      ['Gravidade', '1 g'],
+    ],
   },
 ];
-
-// Países onde o jogador pode começar.
-const COUNTRIES = [
-  { id: 'brasil', name: 'Brasil' },
-  { id: 'estados-unidos', name: 'Estados Unidos' },
-  { id: 'inglaterra', name: 'Inglaterra' },
-  { id: 'italia', name: 'Itália' },
-  { id: 'japao', name: 'Japão' },
-  { id: 'australia', name: 'Austrália' },
-];
-
-let selectedCountry = null;
 
 const views = {
   home: document.getElementById('view-home'),
   nick: document.getElementById('view-nick'),
-  country: document.getElementById('view-country'),
   profile: document.getElementById('view-profile'),
   universe: document.getElementById('view-universe'),
   planet: document.getElementById('view-planet'),
@@ -305,54 +296,17 @@ document.getElementById('edit-nick').addEventListener('click', () => {
 });
 
 // ============================================================
-// PAÍS INICIAL
-// ============================================================
-const countryGrid = document.getElementById('country-grid');
-const countryConfirm = document.getElementById('country-confirm');
-const countryHint = document.getElementById('country-hint');
-
-function buildCountries() {
-  for (const country of COUNTRIES) {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'country-btn';
-    button.textContent = country.name;
-    button.dataset.id = country.id;
-    button.setAttribute('aria-pressed', 'false');
-    button.addEventListener('click', () => {
-      selectedCountry = country.id;
-      for (const other of countryGrid.children) {
-        other.setAttribute('aria-pressed', String(other === button));
-      }
-      countryConfirm.disabled = false;
-      countryHint.textContent = '';
-      countryHint.classList.remove('error');
-    });
-    countryGrid.appendChild(button);
-  }
-}
-
-countryConfirm.addEventListener('click', async () => {
-  if (!selectedCountry) return;
-  countryConfirm.disabled = true;
-  try {
-    await updateDoc(doc(db, 'players', user.uid), { country: selectedCountry });
-    player = { ...player, country: selectedCountry };
-    location.hash = '#universo';
-    render();
-  } catch (error) {
-    console.error(error);
-    countryHint.textContent = explainError(error);
-    countryHint.classList.add('error');
-    countryConfirm.disabled = false;
-  }
-});
-
-// ============================================================
 // TELAS
 // ============================================================
+function setCurrent(link, isCurrent) {
+  if (isCurrent) link.setAttribute('aria-current', 'page');
+  else link.removeAttribute('aria-current');
+}
+
 function show(name) {
   for (const [key, el] of Object.entries(views)) el.hidden = key !== name;
+  setCurrent(document.getElementById('nav-home'), name === 'home');
+  setCurrent(document.getElementById('nav-universe'), name === 'universe' || name === 'planet');
 }
 
 function fillAvatar(el, nick) {
@@ -396,11 +350,35 @@ function buildUniverse() {
   }
 }
 
-function fillPlanet(planet) {
-  document.getElementById('planet-image').src = planet.image;
-  document.getElementById('planet-image').alt = `Planeta ${planet.name}`;
+// Página do planeta. showJobs = true mostra a página Trabalhos dele.
+function fillPlanet(planet, showJobs) {
+  const image = document.getElementById('planet-image');
+  if (image.getAttribute('src') !== planet.image) image.src = planet.image;
+  image.alt = `Planeta ${planet.name}`;
+
   document.getElementById('planet-name').textContent = planet.name;
   document.getElementById('planet-description').textContent = planet.description;
+  document.getElementById('planet-jobs-link').href = `#planeta/${planet.id}/trabalhos`;
+
+  const facts = document.getElementById('planet-facts');
+  facts.textContent = '';
+  for (const [label, value] of planet.facts) {
+    const row = document.createElement('div');
+    const dt = document.createElement('dt');
+    const dd = document.createElement('dd');
+    dt.textContent = label;
+    dd.textContent = value;
+    row.append(dt, dd);
+    facts.appendChild(row);
+  }
+
+  const back = document.getElementById('jobs-back');
+  back.href = `#planeta/${planet.id}`;
+  back.textContent = `← ${planet.name}`;
+  document.getElementById('jobs-planet').textContent = planet.name;
+
+  document.getElementById('planet-info').hidden = showJobs;
+  document.getElementById('planet-jobs').hidden = !showJobs;
 }
 
 function render() {
@@ -409,9 +387,7 @@ function render() {
   const gameRoute = hash === '#universo' || hash.startsWith('#planeta/');
 
   loginButton.hidden = !authReady || Boolean(user);
-  const inGame = Boolean(player && player.country);
-  document.getElementById('go-universe').hidden = !inGame;
-  document.getElementById('nav-universe').hidden = !inGame;
+  document.getElementById('go-universe').hidden = !player;
   chip.hidden = !player;
 
   if (player) {
@@ -435,15 +411,7 @@ function render() {
     return;
   }
 
-  // Tem nick, mas ainda não escolheu o país onde começa.
-  if (player && !player.country) {
-    show('country');
-    return;
-  }
-
   if (player && location.hash === '#perfil') {
-    const country = COUNTRIES.find((c) => c.id === player.country);
-    document.getElementById('profile-country').textContent = country ? country.name : '—';
     const since = player.createdAt && player.createdAt.toDate ? player.createdAt.toDate() : new Date();
     document.getElementById('profile-nick').textContent = player.nick;
     document.getElementById('profile-name').textContent = user.displayName || '—';
@@ -456,9 +424,11 @@ function render() {
   }
 
   if (player && gameRoute) {
-    const planet = PLANETS.find((p) => hash === `#planeta/${p.id}`);
+    // #planeta/terra  ou  #planeta/terra/trabalhos
+    const match = hash.match(/^#planeta\/([^/]+)(\/trabalhos)?$/);
+    const planet = match && PLANETS.find((p) => p.id === match[1]);
     if (planet) {
-      fillPlanet(planet);
+      fillPlanet(planet, Boolean(match[2]));
       show('planet');
     } else {
       show('universe');
@@ -475,6 +445,5 @@ function render() {
 }
 
 buildUniverse();
-buildCountries();
 window.addEventListener('hashchange', render);
 render();

@@ -11,13 +11,16 @@
 
   <header class="topbar">
     <a class="brand" href="#home">Universe <span>Loner</span></a>
-    <nav class="topnav">
-      <a class="nav-link" id="nav-universe" href="#universo" hidden>Universo</a>
+    <nav class="topnav" aria-label="Principal">
+      <a class="nav-link" id="nav-home" href="#home">Home</a>
+      <a class="nav-link" id="nav-universe" href="#universo">Universo</a>
+    </nav>
+    <div class="topbar-end">
       <a class="user-chip" id="user-chip" href="#perfil" hidden>
         <span class="avatar avatar-sm" id="chip-avatar"></span>
         <span id="chip-nick"></span>
       </a>
-    </nav>
+    </div>
   </header>
 
   <main>
@@ -55,19 +58,6 @@
       </form>
     </section>
 
-    <!-- ESCOLHA DO PAÍS INICIAL -->
-    <section class="view" id="view-country" hidden>
-      <div class="card">
-        <h2>Onde você quer começar?</h2>
-        <p class="note">Escolha o país da Terra onde a sua jornada começa.</p>
-        <div class="country-grid" id="country-grid"></div>
-        <p class="hint" id="country-hint"></p>
-        <div class="row">
-          <button class="btn btn-primary" id="country-confirm" type="button" disabled>Começar</button>
-        </div>
-      </div>
-    </section>
-
     <!-- PERFIL -->
     <section class="view" id="view-profile" hidden>
       <div class="card profile">
@@ -76,7 +66,6 @@
         <dl>
           <div><dt>Nome</dt><dd id="profile-name"></dd></div>
           <div id="profile-email-row"><dt>E-mail</dt><dd id="profile-email"></dd></div>
-          <div><dt>País inicial</dt><dd id="profile-country"></dd></div>
           <div><dt>Explorador desde</dt><dd id="profile-since"></dd></div>
         </dl>
         <div class="row">
@@ -95,11 +84,34 @@
     </section>
 
     <!-- PÁGINA DO PLANETA -->
-    <section class="view centered" id="view-planet" hidden>
-      <a class="back-link" href="#universo">← Voltar ao universo</a>
-      <span class="planet planet-lg"><img id="planet-image" alt=""></span>
-      <h1 id="planet-name"></h1>
-      <p class="lead" id="planet-description"></p>
+    <section class="view view-wide" id="view-planet" hidden>
+      <div class="planet-layout">
+        <div class="planet-stage">
+          <span class="planet planet-lg"><img id="planet-image" alt=""></span>
+        </div>
+
+        <!-- Informações do planeta -->
+        <div class="card planet-panel" id="planet-info">
+          <a class="back-link" href="#universo">← Universo</a>
+          <p class="eyebrow">Planeta</p>
+          <h1 id="planet-name"></h1>
+          <p class="lead" id="planet-description"></p>
+          <dl class="facts" id="planet-facts"></dl>
+          <h2 class="section-title">Locais</h2>
+          <a class="place-link" id="planet-jobs-link" href="#universo">
+            <strong>Trabalhos</strong>
+            <span>Ver os trabalhos disponíveis →</span>
+          </a>
+        </div>
+
+        <!-- Trabalhos do planeta -->
+        <div class="card planet-panel" id="planet-jobs" hidden>
+          <a class="back-link" id="jobs-back" href="#universo"></a>
+          <p class="eyebrow" id="jobs-planet"></p>
+          <h1>Trabalhos</h1>
+          <p class="empty">Nenhum trabalho disponível por enquanto.</p>
+        </div>
+      </div>
     </section>
   </main>
 
