@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Universe Loner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="game" aria-hidden="true"></canvas>
+
+  <header class="topbar">
+    <a class="brand" href="#home">Universe <span>Loner</span></a>
+    <a class="user-chip" id="user-chip" href="#perfil" hidden>
+      <span class="avatar avatar-sm" id="chip-avatar"></span>
+      <span id="chip-nick"></span>
+    </a>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section class="view" id="view-home">
+      <p class="eyebrow">Exploração espacial</p>
+      <h1>Um universo inteiro.<br>Só você e a sua nave.</h1>
+      <p class="lead">Explore sistemas desconhecidos, descubra planetas e faça o seu próprio caminho entre as estrelas.</p>
+
+      <div class="login-area">
+        <button class="btn btn-primary" id="google-login" type="button" hidden>Entrar com Google</button>
+        <p class="note" id="status" role="status"></p>
+      </div>
+      <a class="btn btn-primary" id="go-profile" href="#perfil" hidden>Ver meu perfil</a>
+
+      <ul class="features">
+        <li><strong>Explore</strong><span>Viaje livremente entre sistemas e planetas.</span></li>
+        <li><strong>Descubra</strong><span>Encontre lugares que ninguém viu antes.</span></li>
+        <li><strong>Faça de tudo</strong><span>Você decide como jogar.</span></li>
+      </ul>
+    </section>
+
+    <!-- ESCOLHA DO NICK -->
+    <section class="view" id="view-nick" hidden>
+      <form class="card" id="nick-form" novalidate>
+        <h2 id="nick-title">Escolha o seu nick</h2>
+        <p class="note" id="nick-subtitle">É assim que os outros jogadores vão ver você.</p>
+        <label for="nick-input">Nick</label>
+        <input id="nick-input" type="text" autocomplete="off" spellcheck="false" maxlength="16" placeholder="ex: StarWalker_7">
+        <p class="hint" id="nick-hint">De 3 a 16 caracteres: letras, números e _</p>
+        <div class="row">
+          <button class="btn btn-primary" type="submit">Confirmar</button>
+          <button class="btn btn-ghost" id="nick-cancel" type="button" hidden>Cancelar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- PERFIL -->
+    <section class="view" id="view-profile" hidden>
+      <div class="card profile">
+        <span class="avatar avatar-lg" id="profile-avatar"></span>
+        <h2 id="profile-nick"></h2>
+        <dl>
+          <div><dt>Nome</dt><dd id="profile-name"></dd></div>
+          <div id="profile-email-row"><dt>E-mail</dt><dd id="profile-email"></dd></div>
+          <div><dt>Explorador desde</dt><dd id="profile-since"></dd></div>
+        </dl>
+        <div class="row">
+          <button class="btn btn-ghost" id="edit-nick" type="button">Alterar nick</button>
+          <button class="btn btn-ghost" id="logout" type="button">Sair</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
