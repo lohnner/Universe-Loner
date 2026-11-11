@@ -88,8 +88,11 @@ let lastTime = 0;
 function loop(time) {
   const dt = Math.min((time - lastTime) / 1000, 0.1);
   lastTime = time;
-  update(dt);
-  draw();
+  // enquanto o jogador arrasta o mapa, as estrelas do fundo ficam paradas
+  if (!pan.active) {
+    update(dt);
+    draw();
+  }
   requestAnimationFrame(loop);
 }
 
@@ -132,42 +135,42 @@ const PLANETS = [
       {
         id: 'nova-aurora',
         name: 'Nova Aurora',
-        x: 430,
-        y: 430,
-        w: 330,
-        h: 170,
-        markerDy: 80,
-        description: 'Cidade tranquila de casas baixas, cercada de florestas e plantações.',
+        x: 520,
+        y: 480,
+        w: 460,
+        h: 230,
+        markerDy: 95,
+        description: 'Vila futurista acabada no meio do deserto. Cúpulas remendadas, sucata e poeira.',
       },
       {
         id: 'porto-azul',
         name: 'Porto Azul',
-        x: 900,
-        y: 720,
-        w: 320,
-        h: 165,
-        markerDy: 215,
-        description: 'Cidade portuária de arranha-céus à beira-mar.',
+        x: 1900,
+        y: 1280,
+        w: 450,
+        h: 230,
+        markerDy: 240,
+        description: 'Porto futurista de torres de vidro e néon à beira-mar.',
       },
       {
         id: 'vale-central',
         name: 'Vale Central',
-        x: 1720,
-        y: 860,
-        w: 390,
-        h: 200,
-        markerDy: 240,
-        description: 'Centro financeiro moderno no vale ao lado das montanhas.',
+        x: 2720,
+        y: 900,
+        w: 560,
+        h: 285,
+        markerDy: 280,
+        description: 'Centro financeiro futurista, a maior cidade do planeta.',
       },
       {
         id: 'mina-de-cobre',
         name: 'Mina de cobre',
-        x: 640,
-        y: 230,
-        w: 390,
-        h: 200,
-        markerDy: 115,
-        description: 'Terreno cercado ao lado de Nova Aurora, com cava a céu aberto. Produz cobre.',
+        x: 980,
+        y: 420,
+        w: 290,
+        h: 150,
+        markerDy: 110,
+        description: 'Mina pequena com perfuratriz a laser, perto de Nova Aurora. Produz cobre.',
       },
     ],
   },
@@ -425,12 +428,33 @@ const mapView = document.getElementById('planet-map');
 const mapInner = document.getElementById('map-inner');
 const pan = { x: 0, y: 0, startX: 0, startY: 0, originX: 0, originY: 0, active: false, moved: false };
 
+// O mapa inteiro vira uma imagem só (canvas). Arrastar apenas desloca essa
+// imagem pela placa de vídeo, no máximo uma vez por quadro: é isso que deixa leve.
+let panFrame = 0;
+
 function setPan(x, y) {
   const minX = Math.min(0, mapView.clientWidth - mapInner.offsetWidth);
   const minY = Math.min(0, mapView.clientHeight - mapInner.offsetHeight);
-  pan.x = Math.max(minX, Math.min(0, x));
-  pan.y = Math.max(minY, Math.min(0, y));
-  mapInner.style.transform = `translate(${pan.x}px, ${pan.y}px)`;
+  pan.x = Math.round(Math.max(minX, Math.min(0, x)));
+  pan.y = Math.round(Math.max(minY, Math.min(0, y)));
+  if (panFrame) return;
+  panFrame = requestAnimationFrame(() => {
+    panFrame = 0;
+    mapInner.style.transform = `translate3d(${pan.x}px, ${pan.y}px, 0)`;
+  });
+}
+
+function drawMapArt(map) {
+  const canvas = document.getElementById('map-art');
+  canvas.width = map.width;
+  canvas.height = map.height;
+  const image = new Image();
+  const url = URL.createObjectURL(new Blob([map.svg], { type: 'image/svg+xml' }));
+  image.onload = () => {
+    canvas.getContext('2d').drawImage(image, 0, 0);
+    URL.revokeObjectURL(url);
+  };
+  image.src = url;
 }
 
 function centerMapOn(place) {
@@ -527,7 +551,7 @@ function buildMapPlaces(planet) {
   const map = window.UL_MAPS[planet.id];
   mapInner.style.width = `${map.width}px`;
   mapInner.style.height = `${map.height}px`;
-  document.getElementById('map-art').innerHTML = map.svg;
+  drawMapArt(map);
   centerMapOn(playerPlace(planet));
 
   for (const place of planet.places) {

@@ -467,7 +467,7 @@ a:focus-visible {
   will-change: transform;
 }
 
-#map-art svg {
+#map-art {
   display: block;
 }
 

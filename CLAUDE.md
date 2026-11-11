@@ -47,10 +47,16 @@ e mantenha-o atualizado quando a estrutura mudar.
   clicável), markerDy (altura do marcador "Você"). O jogador começa no
   primeiro place (Nova Aurora).
 - `mapa.js` (script comum, não módulo) desenha o mapa da Terra em SVG por
-  código (2000x1300, isométrico) e expõe `window.UL_MAPS.terra`. As posições
+  código (3200x2000, isométrico) e expõe `window.UL_MAPS.terra`. As posições
   das cidades e da mina ficam no topo dele e PRECISAM bater com os `places`
-  do `script.js`. Nova Aurora = casas baixas; Porto Azul e Vale Central =
-  arranha-céus. Não leia o arquivo inteiro: procure a seção pelo comentário.
+  do `script.js`. Deserto à esquerda (`desertEdge`), verde à direita, mar
+  embaixo. Nova Aurora = vila futurista acabada no deserto (`outpost`), com a
+  mina pequena ao lado; Porto Azul e Vale Central = torres futuristas com
+  néon (`cityGrid`, `futureTower`, `cylTower`). Sem montanhas: o dono achou
+  infantis; no lugar há chapadas (`mesa`). Não leia o arquivo inteiro:
+  procure a seção pelo comentário.
+- Desempenho: `drawMapArt()` em `script.js` transforma o SVG numa imagem só
+  (`<canvas id="map-art">`). Nunca coloque o SVG direto na página: fica lento.
 - O mapa é maior que a janela (`#planet-map`) e arrasta com o mouse
   (`setPan`, `centerMapOn` em `script.js`).
 - Viagem: clicar num local mostra os detalhes e o botão "Viajar para cá";
