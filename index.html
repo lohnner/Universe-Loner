@@ -55,6 +55,19 @@
       </form>
     </section>
 
+    <!-- ESCOLHA DO PAÍS INICIAL -->
+    <section class="view" id="view-country" hidden>
+      <div class="card">
+        <h2>Onde você quer começar?</h2>
+        <p class="note">Escolha o país da Terra onde a sua jornada começa.</p>
+        <div class="country-grid" id="country-grid"></div>
+        <p class="hint" id="country-hint"></p>
+        <div class="row">
+          <button class="btn btn-primary" id="country-confirm" type="button" disabled>Começar</button>
+        </div>
+      </div>
+    </section>
+
     <!-- PERFIL -->
     <section class="view" id="view-profile" hidden>
       <div class="card profile">
@@ -63,6 +76,7 @@
         <dl>
           <div><dt>Nome</dt><dd id="profile-name"></dd></div>
           <div id="profile-email-row"><dt>E-mail</dt><dd id="profile-email"></dd></div>
+          <div><dt>País inicial</dt><dd id="profile-country"></dd></div>
           <div><dt>Explorador desde</dt><dd id="profile-since"></dd></div>
         </dl>
         <div class="row">

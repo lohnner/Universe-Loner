@@ -12,6 +12,7 @@ import {
   getDoc,
   runTransaction,
   serverTimestamp,
+  updateDoc,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 // ============================================================
@@ -99,7 +100,7 @@ if (!reduceMotion) requestAnimationFrame(loop);
 // ============================================================
 // ESTADO
 // Firestore:
-//   players/{uid}      -> { nick, nickLower, createdAt }
+//   players/{uid}      -> { nick, nickLower, createdAt, country }
 //   nicks/{nickLower}  -> { uid }   (garante nick único)
 // ============================================================
 const NICK_PATTERN = /^[A-Za-z0-9_]{3,16}$/;
@@ -121,9 +122,22 @@ const PLANETS = [
   },
 ];
 
+// Países onde o jogador pode começar.
+const COUNTRIES = [
+  { id: 'brasil', name: 'Brasil' },
+  { id: 'estados-unidos', name: 'Estados Unidos' },
+  { id: 'inglaterra', name: 'Inglaterra' },
+  { id: 'italia', name: 'Itália' },
+  { id: 'japao', name: 'Japão' },
+  { id: 'australia', name: 'Austrália' },
+];
+
+let selectedCountry = null;
+
 const views = {
   home: document.getElementById('view-home'),
   nick: document.getElementById('view-nick'),
+  country: document.getElementById('view-country'),
   profile: document.getElementById('view-profile'),
   universe: document.getElementById('view-universe'),
   planet: document.getElementById('view-planet'),
@@ -240,6 +254,7 @@ async function saveNick(nick) {
     }
     if (!nickSnap.exists()) tx.set(nickRef, { uid: user.uid });
     tx.set(playerRef, {
+      ...previous, // mantém o resto do perfil (país etc.) ao trocar de nick
       nick,
       nickLower,
       createdAt: previous ? previous.createdAt : serverTimestamp(),
@@ -287,6 +302,50 @@ document.getElementById('nick-cancel').addEventListener('click', () => {
 document.getElementById('edit-nick').addEventListener('click', () => {
   editingNick = true;
   render();
+});
+
+// ============================================================
+// PAÍS INICIAL
+// ============================================================
+const countryGrid = document.getElementById('country-grid');
+const countryConfirm = document.getElementById('country-confirm');
+const countryHint = document.getElementById('country-hint');
+
+function buildCountries() {
+  for (const country of COUNTRIES) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'country-btn';
+    button.textContent = country.name;
+    button.dataset.id = country.id;
+    button.setAttribute('aria-pressed', 'false');
+    button.addEventListener('click', () => {
+      selectedCountry = country.id;
+      for (const other of countryGrid.children) {
+        other.setAttribute('aria-pressed', String(other === button));
+      }
+      countryConfirm.disabled = false;
+      countryHint.textContent = '';
+      countryHint.classList.remove('error');
+    });
+    countryGrid.appendChild(button);
+  }
+}
+
+countryConfirm.addEventListener('click', async () => {
+  if (!selectedCountry) return;
+  countryConfirm.disabled = true;
+  try {
+    await updateDoc(doc(db, 'players', user.uid), { country: selectedCountry });
+    player = { ...player, country: selectedCountry };
+    location.hash = '#universo';
+    render();
+  } catch (error) {
+    console.error(error);
+    countryHint.textContent = explainError(error);
+    countryHint.classList.add('error');
+    countryConfirm.disabled = false;
+  }
 });
 
 // ============================================================
@@ -350,8 +409,9 @@ function render() {
   const gameRoute = hash === '#universo' || hash.startsWith('#planeta/');
 
   loginButton.hidden = !authReady || Boolean(user);
-  document.getElementById('go-universe').hidden = !player;
-  document.getElementById('nav-universe').hidden = !player;
+  const inGame = Boolean(player && player.country);
+  document.getElementById('go-universe').hidden = !inGame;
+  document.getElementById('nav-universe').hidden = !inGame;
   chip.hidden = !player;
 
   if (player) {
@@ -375,7 +435,15 @@ function render() {
     return;
   }
 
+  // Tem nick, mas ainda não escolheu o país onde começa.
+  if (player && !player.country) {
+    show('country');
+    return;
+  }
+
   if (player && location.hash === '#perfil') {
+    const country = COUNTRIES.find((c) => c.id === player.country);
+    document.getElementById('profile-country').textContent = country ? country.name : '—';
     const since = player.createdAt && player.createdAt.toDate ? player.createdAt.toDate() : new Date();
     document.getElementById('profile-nick').textContent = player.nick;
     document.getElementById('profile-name').textContent = user.displayName || '—';
@@ -407,5 +475,6 @@ function render() {
 }
 
 buildUniverse();
+buildCountries();
 window.addEventListener('hashchange', render);
 render();
